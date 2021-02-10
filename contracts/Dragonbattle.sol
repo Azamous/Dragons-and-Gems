@@ -6,7 +6,7 @@ contract DragonBattle is DragonManager {
     // Fireball attacks head, ClawsAttack - belly, TailAttack - legs
     enum AttackType {FireBall, ClawsAttack, TailAttack}
     // Required to generate random numbers
-    uint256 randNonce = 0;
+    uint256 private randNonce = 0;
 
     event Victory(string _ownerDragon, string _another, uint256 _value);
     event Loss(string _ownerDragon, string _another);
@@ -73,7 +73,7 @@ contract DragonBattle is DragonManager {
         dragon.defence = _defence;
     }
 
-    function GetDefence(uint256 _id) public _ownerOfDragon(_id) returns(defenceType) {
+    function GetDefence(uint256 _id) public view _ownerOfDragon(_id) returns(defenceType) {
         Dragon storage dragon = dragons[_id];
         return dragon.defence;
     }
