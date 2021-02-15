@@ -3,8 +3,6 @@ pragma solidity ^0.6.12;
 import "./DragonManager.sol";
 
 contract DragonBattle is DragonManager {
-    // Fireball attacks head, ClawsAttack - belly, TailAttack - legs
-    enum AttackType {FireBall, ClawsAttack, TailAttack}
     // Required to generate random numbers
     uint256 private randNonce = 0;
 
@@ -42,18 +40,19 @@ contract DragonBattle is DragonManager {
         return uint256(keccak256(abi.encodePacked(now, msg.sender, randNonce++)));
     }
 
-    function _DragonVictory(Dragon storage _attacker, Dragon storage _another) internal  {
+    function _DragonVictory(uint256 _attackerId, uint256 _anotherId,
+                Dragon storage _attacker, Dragon storage _another) internal  {
         // Collect Gems
         uint256 precent;
         if (_attacker.dragonType == DragonType.GreenWelch) {
             precent = _getPercentage(_attacker.dragonType);
         }
-        uint256 value = _another.gemsAmount * precent / 100;
-        _another.gemsAmount -= value;
-        _attacker.gemsAmount += value;
+        uint256 value = _balances[_anotherId].mul(precent).div(100);
+        _balances[_anotherId] = _balances[_anotherId].sub(value);
+        _balances[_attackerId] = _balances[_attackerId].add(value);
         // Change win/loss counters
-        _attacker.wins++;
-        _another.losses++;
+        _attacker.wins = _attacker.wins.add(1);
+        _another.losses = _another.losses.add(1);
         // Emit events
         emit Victory(_attacker.name, _another.name, value);
         emit Loss (_another.name, _attacker.name);
@@ -61,8 +60,8 @@ contract DragonBattle is DragonManager {
 
     function _DragonLoss(Dragon storage _attacker, Dragon storage _another) internal {
         // Change win/loss counters
-        _attacker.losses++;
-        _another.wins++;
+        _attacker.losses = _attacker.losses.add(1);
+        _another.wins = _another.wins.add(1);
         // Emit Events
         emit Victory(_another.name, _attacker.name, 0);
         emit Loss(_attacker.name, _another.name);
@@ -85,10 +84,10 @@ contract DragonBattle is DragonManager {
             Dragon storage another = dragons[_anotherId];
             if (_isAttackSuccessfull(_attack, another.defence)) { // Attack is correct
                 if (attacker.stage >= another.stage) { // Victory if your dragon is same stage or higher
-                    _DragonVictory(attacker, another);
+                    _DragonVictory(_attackerId, _anotherId, attacker, another);
                 } 
                 else if (_getRandom() % 100 < 70) { // Victory if your dragon stage is lower but you get 70% chance
-                    _DragonVictory(attacker, another);
+                    _DragonVictory(_attackerId, _anotherId, attacker, another);
                 }
                 else { // Loss
                     _DragonLoss(attacker, another);
@@ -96,13 +95,13 @@ contract DragonBattle is DragonManager {
             }
             else { // Attack is incorrect but still have chance to win
                 if (attacker.stage > another.stage && _getRandom() % 100 < 50) { // Victory if stage is higher and get 50% chance
-                    _DragonVictory(attacker, another);
+                    _DragonVictory(_attackerId, _anotherId, attacker, another);
                 }
                 else if (attacker.stage == another.stage && _getRandom() % 100 < 30){ // Victory if stage is the same and get 30% chance
-                    _DragonVictory(attacker, another);
+                    _DragonVictory(_attackerId, _anotherId, attacker, another);
                 } 
                 else if (_getRandom() % 100 < 10) { // Victory if stage is lower but got 10% chence
-                    _DragonVictory(attacker, another);
+                    _DragonVictory(_attackerId, _anotherId, attacker, another);
                 }
                 else { // Loss
                     _DragonLoss(attacker, another);
