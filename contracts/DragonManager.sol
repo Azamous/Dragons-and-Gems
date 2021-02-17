@@ -3,6 +3,8 @@ pragma solidity ^0.6.12;
 import "./GemsERC20.sol";
 
 contract DragonManager is GemsERC20 {
+
+        // Creates dragon and mint him 100 gems. Each type of dragons has different started gems maximum
     function _createDragon(string memory _name, DragonType _type, defenceType _defence) internal {
         uint256 id;
         uint256 max = 200 + 100 * uint256(_type);
@@ -16,7 +18,7 @@ contract DragonManager is GemsERC20 {
         _triggerCreationCooldown();
     }
 
-
+    // Get price of a dragon in gems
     function _dragonPrice(DragonType _dragonType) internal view returns (uint256) {
             if (_dragonType == DragonType.Wyvern)
                 return 200;
@@ -33,6 +35,7 @@ contract DragonManager is GemsERC20 {
 
     }
 
+    // Breed a free dragon
     function CreateGreenWelschDragon(string memory _name, defenceType _defence) public _readyToCreate() {
         _createDragon(_name, DragonType.GreenWelch, _defence);
     }
@@ -44,13 +47,17 @@ contract DragonManager is GemsERC20 {
                   _createDragon(_name, _dragonType, _defence);
               }
 
+    // Upgrade you dragon's stage once in three days
+    // Each stage expands dragon's gem maximum for 200 gems
     function GetNextStage(uint256 _id) public _ownerOfDragon(_id) _readyToGrow(_id) {
         Dragon storage dragon = dragons[_id];
         require(dragon.stage < 5);
         dragon.stage++;
+        dragon.gemsMax = dragon.gemsMax.add(200);
         dragon.nextStageCooldown = now + 3 days;
     }
 
+    // Spend gems to expand gems maximum
     function expandGemsMax(uint256 _id) public _ownerOfDragon(_id) {
         require(_balances[_id] >= 200);
          Dragon storage dragon = dragons[_id];

@@ -24,7 +24,7 @@ describe('Testset for Dragon and Gems #2', () => {
         contractInstance = await dragonBattle.new({from: deployer});
     });
 
-    describe('DragonManager Test', () => {
+    describe('DragonBattle Test', () => {
         beforeEach(async() => {
             // Create a snapshot
             const snapshot = await timeMachine.takeSnapshot();
@@ -134,22 +134,21 @@ describe('Testset for Dragon and Gems #2', () => {
             assert(false, "The contract did not throw.");
           });
 
-          it ('Should let dragon win and give him 2 gems', async () => {
+          it ('Should let dragon win and give him 15 gems', async () => {
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
             await contractInstance.AttackDragon(0, 1, 0, {from: user1});
-            const dragon1 = await contractInstance.ShowDragon(0, {from: user1});
-            const dragon2 = await contractInstance.ShowDragon(1, {from: user2});
-            assert.equal(dragon1[2], 12);
-            assert.equal(dragon2[2], 8);
+            const amount1 = await contractInstance.BalanceOfGems(0, {from: user1});
+            const amount2 = await contractInstance.BalanceOfGems(1, {from: user2});
+            assert.equal(amount1, 115);
+            assert.equal(amount2, 85);
           });
 
           it ('Should set and get dragon defence type', async () => {
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
-            await contractInstance.SetDefence(0, 1), {from: user1};
+            await contractInstance.SetDefence(0, 1, {from: user1});
             const result = await contractInstance.GetDefence(0, {from: user1});
-            console.log(result);
-            assert.equal(result.receipt.status, true);
+            assert.equal(result, 1);
           });
 
           it ('Should change win count for dragon1 and loss count for dragon2 in case of dragon1\'s win', async () => {

@@ -1,6 +1,8 @@
 pragma solidity ^0.6.12;
 
 import "./DragonHelper.sol";
+// Transfer gems among dragons
+// Dragons ids are used instead of address
 
 contract GemsERC20 is DragonHelper {
     mapping (uint256 => uint256) internal _balances;

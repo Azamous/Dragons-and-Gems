@@ -2,6 +2,8 @@ pragma solidity ^0.6.12;
 
 import "./DragonManager.sol";
 
+// A fight between two dragons is represented in style of "Камень ножницы бумага" game
+// Defence and attack types can be seen in DragonHelper
 contract DragonBattle is DragonManager {
     // Required to generate random numbers
     uint256 private randNonce = 0;
@@ -9,11 +11,13 @@ contract DragonBattle is DragonManager {
     event Victory(string _ownerDragon, string _another, uint256 _value);
     event Loss(string _ownerDragon, string _another);
 
+    // Dragon can attack once a day
     modifier _readyToAttack(uint256 _id) {
         require(dragons[_id].attackCooldown <= now);
         _;
     }
 
+    // Dragon can attack others that 2 stages lower
     modifier _CantAttackSmallerDragons(uint256 _attackerId, uint256 _anotherId) {
         require(dragons[_attackerId].stage <= dragons[_anotherId].stage ||
                  dragons[_attackerId].stage - dragons[_anotherId].stage <= 2);
@@ -42,6 +46,7 @@ contract DragonBattle is DragonManager {
         _dragon.attackCooldown =  uint256(now + 1 days);
     }
 
+    // Checks if you guessed the attack type
     function _isAttackSuccessfull(AttackType _attack, defenceType _defence) internal pure 
         returns (bool) {
             return uint256(_attack) == uint256(_defence);
@@ -51,13 +56,13 @@ contract DragonBattle is DragonManager {
         return uint256(keccak256(abi.encodePacked(now, msg.sender, randNonce++)));
     }
 
+    // Victory benefits precent of other dragon gems, increments wins count
+    // Loser loses gems
     function _DragonVictory(uint256 _attackerId, uint256 _anotherId,
                 Dragon storage _attacker, Dragon storage _another) internal  {
         // Collect Gems
         uint256 precent;
-        if (_attacker.dragonType == DragonType.GreenWelch) {
-            precent = _getPercentage(_attacker.dragonType);
-        }
+        precent = _getPercentage(_attacker.dragonType);
         uint256 value = _balances[_anotherId].mul(precent).div(100);
         _balances[_anotherId] = _balances[_anotherId].sub(value);
         if (_balances[_attackerId].add(value) > _attacker.gemsMax) { // Check if new value of gems bigger than Gem Cap
@@ -74,6 +79,8 @@ contract DragonBattle is DragonManager {
         emit Loss (_another.name, _attacker.name);
     }
 
+    // If attacker didn't guess attack type
+    // Increment wins count for other dragon and losses count for attacker
     function _DragonLoss(Dragon storage _attacker, Dragon storage _another) internal {
         // Change win/loss counters
         _attacker.losses = _attacker.losses.add(1);
@@ -83,16 +90,20 @@ contract DragonBattle is DragonManager {
         emit Loss(_attacker.name, _another.name);
     }
 
+    // Sets a type of defence for your dragon(default - defendHead)
     function SetDefence(uint256 _id, defenceType _defence) public _ownerOfDragon(_id) {
         Dragon storage dragon = dragons[_id];
         dragon.defence = _defence;
     }
 
+    // Shows defence of your dragon
     function GetDefence(uint256 _id) public view _ownerOfDragon(_id) returns(defenceType) {
         Dragon storage dragon = dragons[_id];
         return dragon.defence;
     }
 
+    // One dragon can attack others once a days
+    // Collects gems in case of victory
     function AttackDragon(uint256 _attackerId, uint256 _anotherId, AttackType _attack) public 
         _ownerOfDragon(_attackerId) _readyToAttack(_attackerId)
         _CantAttackSmallerDragons(_attackerId, _anotherId) {

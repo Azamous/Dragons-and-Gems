@@ -42,10 +42,13 @@ contract DragonHelper {
         _;
     }
 
+
+    // You can breed one dragon a day
     function _triggerCreationCooldown() internal {
         creationCooldown[msg.sender] = uint256(now + 1 days);
     }
 
+    // Shows all owner's dragons' ids
     function ShowOwnerDragons(address _address) public view returns(uint256[] memory) {
         uint256[] memory ownedDragons = new uint256[](ownerDragonsCount[_address]);
         uint256 count = 0;
@@ -58,6 +61,7 @@ contract DragonHelper {
         return ownedDragons;
     }
 
+    // Shows main info about dragon except defence type and gems amount
     function ShowDragon(uint256 _id) public view
              returns(string memory, DragonType, uint256, uint256, uint256, uint256){
         Dragon memory dragon = dragons[_id];
