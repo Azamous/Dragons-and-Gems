@@ -21,9 +21,20 @@ contract DragonBattle is DragonManager {
     }
     // Returns precent of gems to steal
     function _getPercentage(DragonType _type) internal pure returns(uint256) {
-        if (_type == DragonType.GreenWelch) {
+        if (_type == DragonType.GreenWelch) 
+            return 15;
+        if (_type == DragonType.Wyvern) 
             return 20;
-        }
+        if (_type == DragonType.Feydragon) 
+            return 25;
+        if (_type == DragonType.Tarasque) 
+            return 25;
+        if (_type == DragonType.ChineseFireball) 
+            return 30;
+        if (_type == DragonType.NorwegianHornTail) 
+            return 30;
+        if (_type == DragonType.UkrainianIronBelly) 
+            return 35;
         return 1;
     }
 
@@ -49,7 +60,12 @@ contract DragonBattle is DragonManager {
         }
         uint256 value = _balances[_anotherId].mul(precent).div(100);
         _balances[_anotherId] = _balances[_anotherId].sub(value);
-        _balances[_attackerId] = _balances[_attackerId].add(value);
+        if (_balances[_attackerId].add(value) > _attacker.gemsMax) { // Check if new value of gems bigger than Gem Cap
+            _balances[_attackerId] = _attacker.gemsMax;
+        }
+         else {
+            _balances[_attackerId] = _balances[_attackerId].add(value);
+         }
         // Change win/loss counters
         _attacker.wins = _attacker.wins.add(1);
         _another.losses = _another.losses.add(1);

@@ -62,7 +62,7 @@ contract GemsERC20 is DragonHelper {
 
     function _transferGems(uint256 _dragonSender, uint256 _dragonReceiver, uint256 _amount) internal {
         require(_dragonReceiver < dragons.length, "Dragon doesn't exist");
-        require(_amount.add(_balances[_dragonReceiver]) <= dragons[_dragonReceiver].gemsCap, "Dragon cant hold so much gems");
+        require(_amount.add(_balances[_dragonReceiver]) <= dragons[_dragonReceiver].gemsMax, "Dragon cant hold so much gems");
         _balances[_dragonSender] = _balances[_dragonSender].sub(_amount);
         _balances[_dragonReceiver] = _balances[_dragonReceiver].add(_amount);
         emit Transfer(_dragonSender, _dragonReceiver, _amount);

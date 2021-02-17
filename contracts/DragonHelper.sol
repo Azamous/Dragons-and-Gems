@@ -5,7 +5,8 @@ import "./SafeMath.sol";
 contract DragonHelper {
     using SafeMath for uint256;
 
-    enum DragonType {GreenWelch}
+    enum DragonType {GreenWelch, Wyvern, Feydragon, Tarasque, ChineseFireball, NorwegianHornTail,
+     UkrainianIronBelly}
     enum defenceType {defendHead, defendBelly, defendLegs} 
     // Fireball attacks head, ClawsAttack - belly, TailAttack - legs
     enum AttackType {FireBall, ClawsAttack, TailAttack}
@@ -13,7 +14,7 @@ contract DragonHelper {
     struct Dragon {
         string name;
         DragonType dragonType;
-        uint256 gemsCap;
+        uint256 gemsMax;
         uint256 stage;
         uint256 wins;
         uint256 losses;
@@ -60,15 +61,10 @@ contract DragonHelper {
     function ShowDragon(uint256 _id) public view
              returns(string memory, DragonType, uint256, uint256, uint256, uint256){
         Dragon memory dragon = dragons[_id];
-        return(dragon.name, dragon.dragonType, dragon.gemsCap, dragon.stage, dragon.wins, dragon.losses);
+        return(dragon.name, dragon.dragonType, dragon.gemsMax, dragon.stage, dragon.wins, dragon.losses);
     }
 
-    function GetNextStage(uint256 _id) public _ownerOfDragon(_id) _readyToGrow(_id) {
-        Dragon storage dragon = dragons[_id];
-        require(dragon.stage < 5);
-        dragon.stage++;
-        dragon.nextStageCooldown = now + 3 days;
-    }
+    
 
     
 }
