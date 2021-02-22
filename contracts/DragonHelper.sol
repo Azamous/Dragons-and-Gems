@@ -28,17 +28,17 @@ contract DragonHelper {
     mapping (address => uint256) internal ownerDragonsCount;
 
     modifier _readyToCreate() {
-        require (creationCooldown[msg.sender] <= now);
+        require (creationCooldown[msg.sender] <= now, "You have to wait ` day to create a new dragon");
         _;
     }
 
     modifier _readyToGrow(uint256 _id) {
-        require(dragons[_id].nextStageCooldown <= now);
+        require(dragons[_id].nextStageCooldown <= now, "Dragon is not ready to grow");
         _;
     }
 
     modifier _ownerOfDragon(uint256 _id) {
-        require(ownerById[_id] == msg.sender);
+        require(ownerById[_id] == msg.sender, "You are not an owner of the dragon");
         _;
     }
 

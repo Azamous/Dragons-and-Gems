@@ -16,6 +16,11 @@ contract GemsERC20 is DragonHelper {
     event Approval(uint256 indexed owner, address indexed approved, uint256 amount);
     event Transfer(uint256 indexed from, uint256 indexed to, uint256 amount);
 
+    modifier checkAllowance(uint256 _dragonSender, uint256 _amount) {
+         require(_allowances[_dragonSender][msg.sender] >= _amount);
+         _;
+    }
+
     function nameGems() public view returns (string memory) {
         return _name;
     }
@@ -30,6 +35,10 @@ contract GemsERC20 is DragonHelper {
 
     function BalanceOfGems(uint256 _dragonId) public view returns (uint256) {
         return _balances[_dragonId];
+    }
+
+    function allowance(uint256 _owner, address _spender) public view returns( uint256) {
+        return _allowances[_owner][_spender];
     }
 
     function approveGems(uint256 _dragonOwner, address _spender, uint256 _amount) public
@@ -55,9 +64,8 @@ contract GemsERC20 is DragonHelper {
             }
 
     function transferFromGems(uint256 _dragonSender, uint256 _dragonReceiver, uint256 _amount) public
-                returns (bool) {
-                    require(_allowances[_dragonSender][msg.sender] >= _amount);
-                    _transferGems(_dragonSender, _dragonReceiver, _amount);
+               checkAllowance(_dragonSender, _amount) returns (bool) {
+                   _transferGems(_dragonSender, _dragonReceiver, _amount);
                     _approveGems(_dragonSender, msg.sender, _allowances[_dragonSender][msg.sender].sub(_amount));
                     return true;
                 }
@@ -81,5 +89,10 @@ contract GemsERC20 is DragonHelper {
         require(_dragonId < dragons.length, "Dragon doesn't exist");
         _totalSupply = _totalSupply.add(_amount);
         _balances[_dragonId] = _balances[_dragonId].add(_amount);
+    }
+
+    function _burnGems(uint256 _dragonId, uint256 _amount) internal {
+        _balances[_dragonId] = _balances[_dragonId].sub(_amount);
+        _totalSupply = _totalSupply.sub(_amount);
     }
 }

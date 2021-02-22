@@ -19,7 +19,7 @@ contract DragonManager is GemsERC20 {
     }
 
     // Get price of a dragon in gems
-    function _dragonPrice(DragonType _dragonType) internal view returns (uint256) {
+    function _dragonPrice(DragonType _dragonType) internal pure returns (uint256) {
             if (_dragonType == DragonType.Wyvern)
                 return 200;
             if (_dragonType == DragonType.Feydragon)
@@ -41,9 +41,10 @@ contract DragonManager is GemsERC20 {
     }
 
     function CreatePaidDragon(string memory _name, uint256 _dragonToPay, DragonType _dragonType,
-     defenceType _defence) public _readyToCreate() {
+     defenceType _defence) public _ownerOfDragon(_dragonToPay) _readyToCreate() {
                   uint256 price = _dragonPrice(_dragonType);
-                  _balances[_dragonToPay] = _balances[_dragonToPay].sub(price);
+                  require(_balances[_dragonToPay] >= price);
+                  _burnGems(_dragonToPay, price);
                   _createDragon(_name, _dragonType, _defence);
               }
 
@@ -59,9 +60,16 @@ contract DragonManager is GemsERC20 {
 
     // Spend gems to expand gems maximum
     function expandGemsMax(uint256 _id) public _ownerOfDragon(_id) {
-        require(_balances[_id] >= 200);
+        require(_balances[_id] >= 200, "Not enough gems");
          Dragon storage dragon = dragons[_id];
-         _balances[_id] = _balances[_id].sub(200);
+         _burnGems(_id, 200);
          dragon.gemsMax = dragon.gemsMax.add(100);
+    }
+
+    function renameDragon(uint256 _id, string memory _newName) public _ownerOfDragon(_id) {
+        require(_balances[_id] >= 500, "Not enough gems");
+        Dragon storage dragon = dragons[_id];
+        dragon.name = _newName;
+        _burnGems(_id, 500);
     }
 }

@@ -23,7 +23,7 @@ describe('Testset for Dragon and Gems #1', () => {
     });
 
 
-describe('DragonManager Test', () => {
+describe('Dragon Helper & Manager Test', () => {
     beforeEach(async() => {
         // Create a snapshot
         const snapshot = await timeMachine.takeSnapshot();
@@ -72,12 +72,13 @@ describe('DragonManager Test', () => {
         assert(false, "The contract did not throw.");
       });
 
-      it('Should update dragon', async () => {
+      it('Should update dragon and expand his gemsMax for 200 gems', async () => {
         await contractInstance.CreateGreenWelschDragon('1', 0, {from: user2});
         await timeMachine.advanceTime(3*86400);
         await contractInstance.GetNextStage(0, {from: user2});
         const result = await contractInstance.ShowDragon(0, {from: user2});
         assert.equal(result[3], 2);
+        assert.equal(result[2], 400);
       });
 
       it ('Should not let another person update dragon', async () => {
