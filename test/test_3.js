@@ -120,5 +120,129 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         const result = await contractInstance.allowance(0, user2, {from: user2});
         assert.equal(result, 100);
     });
+
+    it('Should increase allowance', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        await contractInstance.approveGems(0, user2, 100, {from: user1});
+        await contractInstance.increaseAllowance(0, user2, 50, {from: user1});
+        let result = await contractInstance.allowance(0, user2, {from: user2});
+        assert.equal(result, 150);
+        await contractInstance.increaseAllowance(0, user3, 50, {from: user1});
+        result = await contractInstance.allowance(0, user3, {from: user2});
+        assert.equal(result, 50);
+    });
+
+    it('Should not let not owner of dragon increase allowance', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        try {
+            await contractInstance.increaseAllowance(0, user2, 50, {from: user2});
+            assert(true);
+        }
+        catch(err){
+            return;
+        }
+        assert(false, "The contract did not throw.");
+    });
+
+    it('Should not let increase allowance for a non-existing dragon', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        try {
+            await contractInstance.increaseAllowance(10, user2, 50, {from: user2});
+            assert(true);
+        }
+        catch(err){
+            return;
+        }
+        assert(false, "The contract did not throw.");
+    });
+
+    it('Should decrease allowance', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        await contractInstance.increaseAllowance(0, user2, 100, {from: user1});
+        await contractInstance.decreaseAllowances(0, user2, 50, {from: user1});
+        let result = await contractInstance.allowance(0, user2, {from: user2});
+        assert.equal(result, 50);
+    });
+
+    it('Should not let decrease allowance for a value less than 0', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        await contractInstance.increaseAllowance(0, user2, 100, {from: user1});
+        try {
+            await contractInstance.decreaseAllowances(0, user2, 150, {from: user1});
+            assert(true);
+        }
+        catch(err){
+            return;
+        }
+        assert(false, "The contract did not throw.");
+    });
+
+    it('Should let approved address send gems and decrease allowance', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
+        await contractInstance.increaseAllowance(0, user2, 50, {from: user1});
+        await contractInstance.transferFromGems(0, 1, 50, {from: user2});
+        let result = await contractInstance.BalanceOfGems(0);
+        assert.equal(result, 50);
+        result = await contractInstance.BalanceOfGems(1);
+        assert.equal(result, 150);
+        result = await contractInstance.allowance(0, user2);
+        assert.equal(result, 0);
+    });
+
+    it('Should not let not approved address send gems', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
+        try {
+            await contractInstance.transferFromGems(0, 1, 50, {from: user2});
+            assert(true);
+        }
+        catch(err){
+            return;
+        }
+        assert(false, "The contract did not throw.");
+    });
+
+    it('Should not let approved address send value of gems which is more than allowed', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
+        await contractInstance.increaseAllowance(0, user2, 50, {from: user1});
+        try {
+            await contractInstance.transferFromGems(0, 1, 75, {from: user2});
+            assert(true);
+        }
+        catch(err){
+            return;
+        }
+        assert(false, "The contract did not throw.");
+    });
+
+    it('Should not transfer gems to non-existing dragon', async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
+        try {
+            await contractInstance.transferGems(0, 2, 50, {from: user1});
+            assert(true);
+        }
+        catch(err){
+            return;
+        }
+        assert(false, "The contract did not throw.");
+    });
+
+    it("Should not let send value of gems more than dragon's gemsMax", async () => {
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
+        await contractInstance.CreateGreenWelschDragon(name, 0, {from: user3});
+        await contractInstance.transferGems(0, 2, 100, {from: user1});
+        try {
+            await contractInstance.transferGems(1, 2, 1, {from: user2}); // Sending 1 gem
+            assert(true);
+        }
+        catch(err){
+            return;
+        }
+        assert(false, "The contract did not throw.");
+    });
 });
 });

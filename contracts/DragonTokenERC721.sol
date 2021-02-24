@@ -25,19 +25,12 @@ contract DragonTokenERC721 is DragonBattle {
     }
 
     function ownerOfDragon(uint256 _tokenId) public view returns (address) {
+        require(_tokenId < dragons.length, "Dragon doesn't exist");
         return ownerById[_tokenId];
     }
 
     function totalSupplyDragon() public view returns (uint256) {
         return dragons.length;
-    }
-
-    function _transferDragon(address _from, address _to, uint256 _tokenId) private {
-        ownerDragonsCount[_to] = ownerDragonsCount[_to].add(1);
-        ownerDragonsCount[_from] = ownerDragonsCount[_from].sub(1);
-        ownerById[_tokenId] = _to;
-        _tokenApprovals[_tokenId] = address(0);
-        emit Transfer(_from, _to, _tokenId);
     }
 
     function transferFromDragon(address _from, address _to, uint256 _tokenId) public payable {
@@ -60,5 +53,17 @@ contract DragonTokenERC721 is DragonBattle {
     function approveDragon(address _approved, uint256 _tokenId) public payable _ownerOfDragon(_tokenId) {
         _tokenApprovals[_tokenId] = _approved;
         emit Approval(msg.sender, _approved, _tokenId);
+    }
+
+    function showApproved(uint256 _tokenId) public view returns(address) {
+        return _tokenApprovals[_tokenId];
+    }
+
+    function _transferDragon(address _from, address _to, uint256 _tokenId) private {
+        ownerDragonsCount[_to] = ownerDragonsCount[_to].add(1);
+        ownerDragonsCount[_from] = ownerDragonsCount[_from].sub(1);
+        ownerById[_tokenId] = _to;
+        _tokenApprovals[_tokenId] = address(0);
+        emit Transfer(_from, _to, _tokenId);
     }
 }

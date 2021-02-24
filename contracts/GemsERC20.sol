@@ -17,7 +17,8 @@ contract GemsERC20 is DragonHelper {
     event Transfer(uint256 indexed from, uint256 indexed to, uint256 amount);
 
     modifier checkAllowance(uint256 _dragonSender, uint256 _amount) {
-         require(_allowances[_dragonSender][msg.sender] >= _amount);
+         require(_allowances[_dragonSender][msg.sender] >= _amount, 
+                "You are not permitted to use this amount of gems");
          _;
     }
 
@@ -47,12 +48,14 @@ contract GemsERC20 is DragonHelper {
              return true;
          } 
 
-    function increaseAllowance(uint256 _dragonId, address _spender, uint256 _value) public returns (bool) {
+    function increaseAllowance(uint256 _dragonId, address _spender, uint256 _value) public
+        _ownerOfDragon(_dragonId) returns (bool) {
             _approveGems(_dragonId, _spender, _allowances[_dragonId][_spender].add(_value));
             return true;
     }
 
-    function decreaseAllowances(uint256 _dragonId, address _spender, uint256 _value) public returns (bool) {
+    function decreaseAllowances(uint256 _dragonId, address _spender, uint256 _value) public
+         _ownerOfDragon(_dragonId) returns (bool) {
         _approveGems(_dragonId, _spender, _allowances[_dragonId][_spender].sub(_value));
         return true;
     }
@@ -78,8 +81,7 @@ contract GemsERC20 is DragonHelper {
         emit Transfer(_dragonSender, _dragonReceiver, _amount);
     }
 
-    function _approveGems(uint256 _dragonOwner, address _spender, uint256 _amount) internal
-             _ownerOfDragon(_dragonOwner) {
+    function _approveGems(uint256 _dragonOwner, address _spender, uint256 _amount) internal {
             require (_spender != address(0), "Approve to the zero address");
              _allowances[_dragonOwner][_spender] = _amount;
              emit Approval(_dragonOwner, _spender, _amount);
