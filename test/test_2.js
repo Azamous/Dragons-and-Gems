@@ -37,20 +37,16 @@ describe('Testset for Dragon and Gems #2', () => {
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
             const result = await contractInstance.AttackDragon(0, 1, 1, {from: user1});
-            assert.equal(result.receipt.status, true);
+            expect(result.receipt.status).to.equal(true);
           });
 
           it('Should not let not owner of a dragon use function', async () => {
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
-            try {
-                await contractInstance.AttackDragon(0, 1, 1, {from: user2});
-                assert(true);
-            }
-            catch(err) {
-                return;
-            }
-            assert(false, "The contract did not throw.");
+            await truffleAssert.reverts(
+              contractInstance.AttackDragon(0, 1, 1, {from: user2}),
+              "You are not an owner of the dragon"
+            );
           });
 
           it('Should let attack after a day of cooldown', async() =>{
@@ -59,7 +55,7 @@ describe('Testset for Dragon and Gems #2', () => {
             await contractInstance.AttackDragon(0, 1, 1, {from: user1});
             await timeMachine.advanceTime(86400);
             const result = await contractInstance.AttackDragon(0, 1, 1, {from: user1});
-            assert.equal(result.receipt.status, true);
+            expect(result.receipt.status).to.equal(true);
           });
 
           it('Should not let attack before one day passes', async () => {
@@ -67,14 +63,10 @@ describe('Testset for Dragon and Gems #2', () => {
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
             await contractInstance.AttackDragon(0, 1, 1, {from: user1});
             await timeMachine.advanceTime(20000);
-            try {
-                await contractInstance.AttackDragon(0, 1, 1, {from: user1});
-                assert(true);
-            }
-            catch(err) {
-                return;
-            }
-            assert(false, "The contract did not throw.");
+            await truffleAssert.reverts(
+              contractInstance.AttackDragon(0, 1, 1, {from: user1}),
+              "Dragon is not ready to attack"
+            );
           });
 
           it('Should let dragon stage 5 attack dragon the same stage', async () =>{
@@ -86,7 +78,7 @@ describe('Testset for Dragon and Gems #2', () => {
                 await contractInstance.GetNextStage(1, {from: user2});
             }
             const result = await contractInstance.AttackDragon(0, 1, 1, {from: user1});
-            assert.equal(result.receipt.status, true);
+            expect(result.receipt.status).to.equal(true);
           });
 
           it('Should let dragon stage 5 attack dragon stage 3', async () => {
@@ -101,7 +93,7 @@ describe('Testset for Dragon and Gems #2', () => {
                 await contractInstance.GetNextStage(1, {from: user2});
             }
             const result = await contractInstance.AttackDragon(0, 1, 1, {from: user1});
-            assert.equal(result.receipt.status, true);
+            expect(result.receipt.status).to.equal(true);
           });
 
           it('Should let dragon stage 1 attack dragon stage 5', async () => {
@@ -112,7 +104,7 @@ describe('Testset for Dragon and Gems #2', () => {
                 await contractInstance.GetNextStage(1, {from: user2});
             }
             const result = await contractInstance.AttackDragon(0, 1, 1, {from: user1});
-            assert.equal(result.receipt.status, true);
+            expect(result.receipt.status).to.equal(true);
           });
 
           it ('Should not let dragon stage 5 attack dragon stage 2', async () => {
@@ -124,14 +116,10 @@ describe('Testset for Dragon and Gems #2', () => {
             }
             await timeMachine.advanceTime(3*86400);
             await contractInstance.GetNextStage(1, {from: user2});
-            try {
-                await contractInstance.AttackDragon(0, 1, 1, {from: user1});
-                assert(true);
-            }
-            catch(err) {
-                return;
-            }
-            assert(false, "The contract did not throw.");
+            await truffleAssert.reverts(
+              contractInstance.AttackDragon(0, 1, 1, {from: user1}),
+              "Can't attack smaller dragons"
+            )
           });
 
           it ('Should let dragon win and give him 15 gems', async () => {
@@ -140,15 +128,15 @@ describe('Testset for Dragon and Gems #2', () => {
             await contractInstance.AttackDragon(0, 1, 0, {from: user1});
             const amount1 = await contractInstance.BalanceOfGems(0, {from: user1});
             const amount2 = await contractInstance.BalanceOfGems(1, {from: user2});
-            assert.equal(amount1, 115);
-            assert.equal(amount2, 85);
+            expect(amount1.toNumber()).to.equal(115);
+            expect(amount2.toNumber()).to.equal(85);
           });
 
           it ('Should set and get dragon defence type', async () => {
             await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
             await contractInstance.SetDefence(0, 1, {from: user1});
             const result = await contractInstance.GetDefence(0, {from: user1});
-            assert.equal(result, 1);
+            expect(result.toNumber()).to.equal(1);
           });
 
           it ('Should change win count for dragon1 and loss count for dragon2 in case of dragon1\'s win', async () => {
@@ -159,8 +147,8 @@ describe('Testset for Dragon and Gems #2', () => {
             await contractInstance.AttackDragon(0, 1, 0, {from: user1});
             const dragon1 = await contractInstance.ShowDragon(0, {from: user1});
             const dragon2 = await contractInstance.ShowDragon(1, {from: user2});
-            assert.equal(dragon1[4], 1);
-            assert.equal(dragon2[5], 1);
+            expect(dragon1[4].toNumber()).to.equal(1);
+            expect(dragon2[5].toNumber()).to.equal(1);
           });
 
           it ('Should change loss count for dragon1 and win count for dragon2 in case of dragon1\'s loss(10% chance this wont happen)',
@@ -174,8 +162,8 @@ describe('Testset for Dragon and Gems #2', () => {
             await contractInstance.AttackDragon(0, 1, 1, {from: user1});
             const dragon1 = await contractInstance.ShowDragon(0, {from: user1});
             const dragon2 = await contractInstance.ShowDragon(1, {from: user2});
-            assert.equal(dragon1[5], 1);
-            assert.equal(dragon2[4], 1);
+            expect(dragon1[5].toNumber()).to.equal(1);
+            expect(dragon2[4].toNumber()).to.equal(1);
           });
      });
 });

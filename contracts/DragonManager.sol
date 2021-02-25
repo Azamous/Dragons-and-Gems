@@ -43,7 +43,7 @@ contract DragonManager is GemsERC20 {
     function CreatePaidDragon(string memory _name, uint256 _dragonToPay, DragonType _dragonType,
      defenceType _defence) public _ownerOfDragon(_dragonToPay) _readyToCreate() {
                   uint256 price = _dragonPrice(_dragonType);
-                  require(_balances[_dragonToPay] >= price);
+                  require(_balances[_dragonToPay] >= price, "Not enough gems");
                   _burnGems(_dragonToPay, price);
                   _createDragon(_name, _dragonType, _defence);
               }
@@ -52,7 +52,7 @@ contract DragonManager is GemsERC20 {
     // Each stage expands dragon's gem maximum for 200 gems
     function GetNextStage(uint256 _id) public _ownerOfDragon(_id) _readyToGrow(_id) {
         Dragon storage dragon = dragons[_id];
-        require(dragon.stage < 5);
+        require(dragon.stage < 5, "Dragon has reached the maximum stage");
         dragon.stage++;
         dragon.gemsMax = dragon.gemsMax.add(200);
         dragon.nextStageCooldown = now + 3 days;

@@ -13,14 +13,14 @@ contract DragonBattle is DragonManager {
 
     // Dragon can attack once a day
     modifier _readyToAttack(uint256 _id) {
-        require(dragons[_id].attackCooldown <= now);
+        require(dragons[_id].attackCooldown <= now, "Dragon is not ready to attack");
         _;
     }
 
     // Dragon can attack others that 2 stages lower
     modifier _CantAttackSmallerDragons(uint256 _attackerId, uint256 _anotherId) {
         require(dragons[_attackerId].stage <= dragons[_anotherId].stage ||
-                 dragons[_attackerId].stage - dragons[_anotherId].stage <= 2);
+                 dragons[_attackerId].stage - dragons[_anotherId].stage <= 2, "Can't attack smaller dragons");
         _;
     }
     // Returns precent of gems to steal

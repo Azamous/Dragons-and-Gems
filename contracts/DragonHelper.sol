@@ -28,7 +28,7 @@ contract DragonHelper {
     mapping (address => uint256) internal ownerDragonsCount;
 
     modifier _readyToCreate() {
-        require (creationCooldown[msg.sender] <= now, "You have to wait ` day to create a new dragon");
+        require (creationCooldown[msg.sender] <= now, "You have to wait 1 day in order to create a new dragon");
         _;
     }
 

@@ -37,40 +37,32 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
         await contractInstance.transferGems(0, 1, 100, {from: user1});
         let result = await contractInstance.BalanceOfGems(1, {from: user2});
-        assert.equal(result, 200);
+        expect(result.toNumber()).to.equal(200);
         await timeMachine.advanceTime(86400);
         await contractInstance.CreatePaidDragon(name, 1, 1, 0, {from: user2});
         result = await contractInstance.ShowDragon(2, {from: user2});
-        assert.equal(result[1], 1);
+        expect(result[1].toNumber()).to.equal(1);
         result = await contractInstance.BalanceOfGems(1, {from: user2});
-        assert.equal(result, 0);
+        expect(result.toNumber()).to.equal(0);
     });
 
     it('Should not let create paid dragon because of lack of gems', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
         await timeMachine.advanceTime(86400);
-        try {
-            await contractInstance.CreatePaidDragon(name, 0, 1, 0, {from: user1});
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.CreatePaidDragon(name, 0, 1, 0, {from: user1}),
+            "Not enough gems"
+        );
     });
 
     it('Should not let not owner of dragon spend gems to create a paid dragon', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
         await contractInstance.transferGems(0, 1, 100, {from: user1});
-        try {
-            await contractInstance.CreatePaidDragon(name, 1, 1, 0, {from: user1});
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.CreatePaidDragon(name, 1, 1, 0, {from: user1}),
+            "You are not an owner of the dragon"
+        );
     });
 
     it('Should spend 200 gems to expand dragon\'s gemsMax for 100', async () => {
@@ -79,9 +71,9 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         await contractInstance.transferGems(0, 1, 100, {from: user1});
         await contractInstance.expandGemsMax(1, {from: user2});
         let result = await contractInstance.BalanceOfGems(1, {from: user2});
-        assert.equal(result, 0);
+        expect(result.toNumber()).to.equal(0);
         result = await contractInstance.ShowDragon(1, {from: user2});
-        assert.equal(result[2], 300);
+        expect(result[2].toNumber()).to.equal(300);
     });
 
     it('Should rename dragon', async () => {
@@ -101,7 +93,7 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         
         await contractInstance.renameDragon(4, "newName", {from: user5});
         const result = await contractInstance.ShowDragon(4, {from:user1});
-        assert.equal(result[0], "newName");
+        expect(result[0]).to.equal("newName");
     });
 
     it('Should show total supply of gems', async () => {
@@ -111,14 +103,14 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user4});
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user5});
         const result = await contractInstance.totalSupplyGems({from: user1});
-        assert.equal(result, 500);
+        expect(result.toNumber()).to.equal(500);
     });
 
     it('Should approve another address to use 100 gems', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
         await contractInstance.approveGems(0, user2, 100, {from: user1});
         const result = await contractInstance.allowance(0, user2, {from: user2});
-        assert.equal(result, 100);
+        expect(result.toNumber()).to.equal(100);
     });
 
     it('Should increase allowance', async () => {
@@ -126,34 +118,26 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         await contractInstance.approveGems(0, user2, 100, {from: user1});
         await contractInstance.increaseAllowance(0, user2, 50, {from: user1});
         let result = await contractInstance.allowance(0, user2, {from: user2});
-        assert.equal(result, 150);
+        expect(result.toNumber()).to.equal(150);
         await contractInstance.increaseAllowance(0, user3, 50, {from: user1});
         result = await contractInstance.allowance(0, user3, {from: user2});
-        assert.equal(result, 50);
+        expect(result.toNumber()).to.equal(50);
     });
 
     it('Should not let not owner of dragon increase allowance', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
-        try {
-            await contractInstance.increaseAllowance(0, user2, 50, {from: user2});
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.increaseAllowance(0, user2, 50, {from: user2}),
+            "You are not an owner of the dragon"
+        );
     });
 
     it('Should not let increase allowance for a non-existing dragon', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
-        try {
-            await contractInstance.increaseAllowance(10, user2, 50, {from: user2});
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.increaseAllowance(10, user2, 50, {from: user2}),
+            "You are not an owner of the dragon"
+        );
     });
 
     it('Should decrease allowance', async () => {
@@ -161,20 +145,16 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         await contractInstance.increaseAllowance(0, user2, 100, {from: user1});
         await contractInstance.decreaseAllowances(0, user2, 50, {from: user1});
         let result = await contractInstance.allowance(0, user2, {from: user2});
-        assert.equal(result, 50);
+        expect(result.toNumber()).to.equal(50);
     });
 
     it('Should not let decrease allowance for a value less than 0', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
         await contractInstance.increaseAllowance(0, user2, 100, {from: user1});
-        try {
-            await contractInstance.decreaseAllowances(0, user2, 150, {from: user1});
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.decreaseAllowances(0, user2, 150, {from: user1}),
+            "SafeMath: subtraction overflow"
+        );
     });
 
     it('Should let approved address send gems and decrease allowance', async () => {
@@ -183,51 +163,39 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         await contractInstance.increaseAllowance(0, user2, 50, {from: user1});
         await contractInstance.transferFromGems(0, 1, 50, {from: user2});
         let result = await contractInstance.BalanceOfGems(0);
-        assert.equal(result, 50);
+        expect(result.toNumber()).to.equal(50);
         result = await contractInstance.BalanceOfGems(1);
-        assert.equal(result, 150);
+        expect(result.toNumber()).to.equal(150);
         result = await contractInstance.allowance(0, user2);
-        assert.equal(result, 0);
+        expect(result.toNumber()).to.equal(0);
     });
 
     it('Should not let not approved address send gems', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
-        try {
-            await contractInstance.transferFromGems(0, 1, 50, {from: user2});
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.transferFromGems(0, 1, 50, {from: user2}),
+            "You are not permitted to use this amount of gems"
+        );
     });
 
     it('Should not let approved address send value of gems which is more than allowed', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
         await contractInstance.increaseAllowance(0, user2, 50, {from: user1});
-        try {
-            await contractInstance.transferFromGems(0, 1, 75, {from: user2});
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.transferFromGems(0, 1, 75, {from: user2}),
+            "You are not permitted to use this amount of gems"
+        );
     });
 
     it('Should not transfer gems to non-existing dragon', async () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user1});
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
-        try {
-            await contractInstance.transferGems(0, 2, 50, {from: user1});
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.transferGems(0, 2, 50, {from: user1}),
+            "Dragon doesn't exist"
+        );
     });
 
     it("Should not let send value of gems more than dragon's gemsMax", async () => {
@@ -235,14 +203,10 @@ describe('Dragon Manager & GemsERC20 Test', () => {
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user2});
         await contractInstance.CreateGreenWelschDragon(name, 0, {from: user3});
         await contractInstance.transferGems(0, 2, 100, {from: user1});
-        try {
-            await contractInstance.transferGems(1, 2, 1, {from: user2}); // Sending 1 gem
-            assert(true);
-        }
-        catch(err){
-            return;
-        }
-        assert(false, "The contract did not throw.");
+        await truffleAssert.reverts(
+            contractInstance.transferGems(1, 2, 1, {from: user2}), // Sending 1 gem
+            "Dragon cant hold so much gems"
+        );
     });
 });
 });
