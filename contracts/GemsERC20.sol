@@ -22,58 +22,58 @@ contract GemsERC20 is DragonHelper {
          _;
     }
 
-    function nameGems() public view returns (string memory) {
+    function nameGems() external view returns (string memory) {
         return _name;
     }
 
-    function symbolGems() public view returns (string memory) {
+    function symbolGems() external view returns (string memory) {
         return _symbol;
     }
 
-    function totalSupplyGems() public view returns (uint256) {
+    function totalSupplyGems() external view returns (uint256) {
         return _totalSupply;
     }
 
-    function BalanceOfGems(uint256 _dragonId) public view returns (uint256) {
+    function BalanceOfGems(uint256 _dragonId) external view returns (uint256) {
         return _balances[_dragonId];
     }
 
-    function allowance(uint256 _owner, address _spender) public view returns( uint256) {
+    function allowance(uint256 _owner, address _spender) external view returns( uint256) {
         return _allowances[_owner][_spender];
     }
 
-    function approveGems(uint256 _dragonOwner, address _spender, uint256 _amount) public
+    function approveGems(uint256 _dragonOwner, address _spender, uint256 _amount) external
          _ownerOfDragon(_dragonOwner) returns (bool) {
              _approveGems(_dragonOwner, _spender, _amount);
              return true;
          } 
 
-    function increaseAllowance(uint256 _dragonId, address _spender, uint256 _value) public
+    function increaseAllowance(uint256 _dragonId, address _spender, uint256 _value) external
         _ownerOfDragon(_dragonId) returns (bool) {
             _approveGems(_dragonId, _spender, _allowances[_dragonId][_spender].add(_value));
             return true;
     }
 
-    function decreaseAllowances(uint256 _dragonId, address _spender, uint256 _value) public
+    function decreaseAllowances(uint256 _dragonId, address _spender, uint256 _value) external
          _ownerOfDragon(_dragonId) returns (bool) {
         _approveGems(_dragonId, _spender, _allowances[_dragonId][_spender].sub(_value));
         return true;
     }
 
-    function transferGems(uint256 _dragonSender, uint256 _dragonReceiver, uint256 _amount) public 
+    function transferGems(uint256 _dragonSender, uint256 _dragonReceiver, uint256 _amount) external 
             _ownerOfDragon(_dragonSender) returns (bool) {
                 _transferGems(_dragonSender, _dragonReceiver, _amount);
                 return true;
             }
 
-    function transferFromGems(uint256 _dragonSender, uint256 _dragonReceiver, uint256 _amount) public
+    function transferFromGems(uint256 _dragonSender, uint256 _dragonReceiver, uint256 _amount) external
                checkAllowance(_dragonSender, _amount) returns (bool) {
                    _transferGems(_dragonSender, _dragonReceiver, _amount);
                     _approveGems(_dragonSender, msg.sender, _allowances[_dragonSender][msg.sender].sub(_amount));
                     return true;
                 }
 
-    function _transferGems(uint256 _dragonSender, uint256 _dragonReceiver, uint256 _amount) internal {
+    function _transferGems(uint256 _dragonSender, uint256 _dragonReceiver, uint256 _amount) private {
         require(_dragonReceiver < dragons.length, "Dragon doesn't exist");
         require(_amount.add(_balances[_dragonReceiver]) <= dragons[_dragonReceiver].gemsMax, "Dragon cant hold so much gems");
         _balances[_dragonSender] = _balances[_dragonSender].sub(_amount);
@@ -81,7 +81,7 @@ contract GemsERC20 is DragonHelper {
         emit Transfer(_dragonSender, _dragonReceiver, _amount);
     }
 
-    function _approveGems(uint256 _dragonOwner, address _spender, uint256 _amount) internal {
+    function _approveGems(uint256 _dragonOwner, address _spender, uint256 _amount) private {
             require (_spender != address(0), "Approve to the zero address");
              _allowances[_dragonOwner][_spender] = _amount;
              emit Approval(_dragonOwner, _spender, _amount);

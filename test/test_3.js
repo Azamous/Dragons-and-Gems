@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const timeMachine = require('ganache-time-traveler');
 const truffleAssert = require('truffle-assertions');
 
-const DragonManager = artifacts.require('DragonManager');
+const DragonManager = artifacts.require('DragonTokenERC721');
 const name = 'Drakosha';
 
 describe('Testset for Dragon and Gems #3', () => {

@@ -49,7 +49,7 @@ contract DragonHelper {
     }
 
     // Shows all owner's dragons' ids
-    function ShowOwnerDragons(address _address) public view returns(uint256[] memory) {
+    function ShowOwnerDragons(address _address) external view returns(uint256[] memory) {
         uint256[] memory ownedDragons = new uint256[](ownerDragonsCount[_address]);
         uint256 count = 0;
         for (uint i = 0; i < dragons.length; i++) {
@@ -62,7 +62,7 @@ contract DragonHelper {
     }
 
     // Shows main info about dragon except defence type and gems amount
-    function ShowDragon(uint256 _id) public view
+    function ShowDragon(uint256 _id) external view
              returns(string memory, DragonType, uint256, uint256, uint256, uint256){
         Dragon memory dragon = dragons[_id];
         return(dragon.name, dragon.dragonType, dragon.gemsMax, dragon.stage, dragon.wins, dragon.losses);

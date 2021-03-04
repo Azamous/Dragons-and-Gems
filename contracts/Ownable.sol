@@ -18,18 +18,18 @@ contract Ownable {
         return _owner;
     }
 
-     function renounceOwnership() public virtual onlyOwner {
+     function renounceOwnership() external virtual onlyOwner {
         emit OwnershipTransferred(_owner, address(0));
         _owner = address(0);
     }
 
-    function transferOwnership(address newOwner) public virtual onlyOwner {
+    function transferOwnership(address newOwner) external virtual onlyOwner {
         require(newOwner != address(0), "Ownable: new owner is the zero address");
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
 
-    function withdraw() public onlyOwner {
+    function withdraw() external onlyOwner {
         payable(_owner).transfer(address(this).balance);
     }
 }
