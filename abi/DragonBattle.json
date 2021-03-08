@@ -3,6 +3,31 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "owner",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "approved",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "string",
         "name": "_ownerDragon",
@@ -16,6 +41,31 @@
       }
     ],
     "name": "Loss",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "from",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "to",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
     "type": "event"
   },
   {
@@ -46,17 +96,64 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_dragonId",
+        "type": "uint256"
+      }
+    ],
+    "name": "BalanceOfGems",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_name",
         "type": "string"
       },
       {
-        "internalType": "enum DragonManager.defenceType",
+        "internalType": "enum DragonHelper.defenceType",
         "name": "_defence",
         "type": "uint8"
       }
     ],
     "name": "CreateGreenWelschDragon",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dragonToPay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum DragonHelper.DragonType",
+        "name": "_dragonType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum DragonHelper.defenceType",
+        "name": "_defence",
+        "type": "uint8"
+      }
+    ],
+    "name": "CreatePaidDragon",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -90,7 +187,7 @@
         "type": "string"
       },
       {
-        "internalType": "enum DragonManager.DragonType",
+        "internalType": "enum DragonHelper.DragonType",
         "name": "",
         "type": "uint8"
       },
@@ -140,12 +237,289 @@
   {
     "inputs": [
       {
+        "internalType": "enum DragonHelper.DragonType",
+        "name": "_dragonType",
+        "type": "uint8"
+      }
+    ],
+    "name": "_dragonPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_owner",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_dragonOwner",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "approveGems",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_dragonId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "decreaseAllowances",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "expandGemsMax",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_dragonId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "increaseAllowance",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nameGems",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_id",
         "type": "uint256"
       },
       {
-        "internalType": "enum DragonManager.defenceType",
+        "internalType": "string",
+        "name": "_newName",
+        "type": "string"
+      }
+    ],
+    "name": "renameDragon",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbolGems",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalSupplyGems",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_dragonSender",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dragonReceiver",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFromGems",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_dragonSender",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dragonReceiver",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferGems",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "enum DragonHelper.DragonType",
+        "name": "_type",
+        "type": "uint8"
+      }
+    ],
+    "name": "_getPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum DragonHelper.defenceType",
         "name": "_defence",
         "type": "uint8"
       }
@@ -166,7 +540,7 @@
     "name": "GetDefence",
     "outputs": [
       {
-        "internalType": "enum DragonManager.defenceType",
+        "internalType": "enum DragonHelper.defenceType",
         "name": "",
         "type": "uint8"
       }
@@ -187,7 +561,7 @@
         "type": "uint256"
       },
       {
-        "internalType": "enum DragonBattle.AttackType",
+        "internalType": "enum DragonHelper.AttackType",
         "name": "_attack",
         "type": "uint8"
       }

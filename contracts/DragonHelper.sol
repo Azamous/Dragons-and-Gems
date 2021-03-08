@@ -18,7 +18,6 @@ contract DragonHelper {
         uint256 stage;
         uint256 wins;
         uint256 losses;
-        uint256 nextStageCooldown;
         uint256 attackCooldown;
         defenceType defence;
     }
@@ -28,12 +27,7 @@ contract DragonHelper {
     mapping (address => uint256) internal ownerDragonsCount;
 
     modifier _readyToCreate() {
-        require (creationCooldown[msg.sender] <= now, "You have to wait 1 day in order to create a new dragon");
-        _;
-    }
-
-    modifier _readyToGrow(uint256 _id) {
-        require(dragons[_id].nextStageCooldown <= now, "Dragon is not ready to grow");
+        require(creationCooldown[msg.sender] <= now, "You have to wait one day in order to create a dragon");
         _;
     }
 
@@ -43,12 +37,13 @@ contract DragonHelper {
     }
 
 
-    // You can breed one dragon a day
+    /// @dev Triggers creation cooldown, you can create one dragon a day
     function _triggerCreationCooldown() internal {
         creationCooldown[msg.sender] = uint256(now + 1 days);
     }
 
-    // Shows all owner's dragons' ids
+    /// @dev Shows all owner's dragons' ids
+    /// @param _address Address of the owner of the dragons
     function ShowOwnerDragons(address _address) external view returns(uint256[] memory) {
         uint256[] memory ownedDragons = new uint256[](ownerDragonsCount[_address]);
         uint256 count = 0;
@@ -61,7 +56,8 @@ contract DragonHelper {
         return ownedDragons;
     }
 
-    // Shows main info about dragon except defence type and gems amount
+    /// @dev Shows main info about dragon except defence type and gems amount
+    /// @param _id Id of a dragon
     function ShowDragon(uint256 _id) external view
              returns(string memory, DragonType, uint256, uint256, uint256, uint256){
         Dragon memory dragon = dragons[_id];

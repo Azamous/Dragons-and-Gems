@@ -11,20 +11,21 @@ contract DragonBattle is DragonManager {
     event Victory(string _ownerDragon, string _another, uint256 _value);
     event Loss(string _ownerDragon, string _another);
 
-    // Dragon can attack once a day
+    /// @dev Dragon can attack once a day
     modifier _readyToAttack(uint256 _id) {
         require(dragons[_id].attackCooldown <= now, "Dragon is not ready to attack");
         _;
     }
 
-    // Dragon can attack others that 2 stages lower
+    /// @dev Dragon can attack others that 2 stages lower
     modifier _CantAttackSmallerDragons(uint256 _attackerId, uint256 _anotherId) {
         require(dragons[_attackerId].stage <= dragons[_anotherId].stage ||
                  dragons[_attackerId].stage - dragons[_anotherId].stage <= 2, "Can't attack smaller dragons");
         _;
     }
-    // Returns precent of gems to steal
-    function _getPercentage(DragonType _type) private pure returns(uint256) {
+    /// @dev Returns precent of gems to steal, each type of dragon has its own precent
+    /// @param _type Type of dragon
+    function _getPercentage(DragonType _type) public pure returns(uint256) {
         if (_type == DragonType.GreenWelch) 
             return 15;
         if (_type == DragonType.Wyvern) 
@@ -42,22 +43,30 @@ contract DragonBattle is DragonManager {
         return 1;
     }
 
+    /// @dev This function is called after an attack in order to trigger cooldown
+    /// @param _dragon Dragon who attacked
     function _triggerAttackCooldown(Dragon storage _dragon) private {
         _dragon.attackCooldown =  uint256(now + 1 days);
     }
 
-    // Checks if you guessed the attack type
+    /// @dev Returns true if you successeded with guessing the attack type
+    /// @param _attack Attack type of attacking dragon
+    /// @param _defence Defence type of defending dragon
     function _isAttackSuccessfull(AttackType _attack, defenceType _defence) private pure 
         returns (bool) {
             return uint256(_attack) == uint256(_defence);
         }
 
+    /// @dev Returns a random number, required to add some randomness in battles
     function _getRandom() private returns(uint256) {
         return uint256(keccak256(abi.encodePacked(now, msg.sender, randNonce++)));
     }
 
-    // Victory benefits precent of other dragon gems, increments wins count
-    // Loser loses gems
+    /// @dev If attack is successfull, an attacking dragon gets gems from other dragon 
+    /// @param _attackerId ID of an attacking dragon
+    /// @param _anotherId ID of an defending dragon
+    /// @param _attacker Dragon struct of an attacking dragon
+    /// @param _another Dragon struct of an defending dragon
     function _DragonVictory(uint256 _attackerId, uint256 _anotherId,
                 Dragon storage _attacker, Dragon storage _another) private  {
         // Collect Gems
@@ -79,8 +88,10 @@ contract DragonBattle is DragonManager {
         emit Loss (_another.name, _attacker.name);
     }
 
-    // If attacker didn't guess attack type
-    // Increment wins count for other dragon and losses count for attacker
+    /// @dev This function is called in case of attacking dragon loss
+    /// @dev Increment wins count for defending dragon and losses count for attacker
+     /// @param _attacker Dragon struct of an attacking dragon
+    /// @param _another Dragon struct of an defending dragon
     function _DragonLoss(Dragon storage _attacker, Dragon storage _another) private {
         // Change win/loss counters
         _attacker.losses = _attacker.losses.add(1);
@@ -90,20 +101,24 @@ contract DragonBattle is DragonManager {
         emit Loss(_attacker.name, _another.name);
     }
 
-    // Sets a type of defence for your dragon(default - defendHead)
+    /// @dev Sets a type of defence for your dragon(default - defendHead)
+    /// @param _id ID of dragon
+    /// @param _defence Defence type(see DragonHepler for list of defence types)
     function SetDefence(uint256 _id, defenceType _defence) external _ownerOfDragon(_id) {
         Dragon storage dragon = dragons[_id];
         dragon.defence = _defence;
     }
 
-    // Shows defence of your dragon
+    /// @dev Shows defence of your dragon
+    /// @param _id ID of dragon
     function GetDefence(uint256 _id) external view _ownerOfDragon(_id) returns(defenceType) {
         Dragon storage dragon = dragons[_id];
         return dragon.defence;
     }
 
-    // One dragon can attack others once a days
-    // Collects gems in case of victory
+    /// @dev Attack other dragon once a day
+    /// @dev Calls DragonVictory function in case of attacker victory 
+    /// @dev Calls DragonLoss function in case of attacker loss
     function AttackDragon(uint256 _attackerId, uint256 _anotherId, AttackType _attack) external 
         _ownerOfDragon(_attackerId) _readyToAttack(_attackerId)
         _CantAttackSmallerDragons(_attackerId, _anotherId) {

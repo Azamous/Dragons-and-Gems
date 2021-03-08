@@ -4,11 +4,14 @@ import "./GemsERC20.sol";
 
 contract DragonManager is GemsERC20 {
 
-        // Creates dragon and mint him 100 gems. Each type of dragons has different started gems maximum
+    /// @dev Creates dragon and mint him 100 gems. Each type of dragons has different started gems maximum
+    /// @param _name Name of a dragon
+    /// @param _type Type of a dragon
+    /// @param _defence Defence type of dragon. Required in Dragon fights
     function _createDragon(string memory _name, DragonType _type, defenceType _defence) private {
         uint256 id;
         uint256 max = 200 + 100 * uint256(_type);
-        dragons.push(Dragon(_name, _type, max, 1, 0, 0, now + 3 days, 0, _defence));
+        dragons.push(Dragon(_name, _type, max, 1, 0, 0, 0, _defence));
         id = dragons.length.sub(1);
         // Set owner for dragon and amount of dragons for owner
         ownerById[id] = msg.sender;
@@ -18,8 +21,9 @@ contract DragonManager is GemsERC20 {
         _triggerCreationCooldown();
     }
 
-    // Get price of a dragon in gems
-    function _dragonPrice(DragonType _dragonType) private pure returns (uint256) {
+    /// @dev Returns price of a dragon in gems
+    /// @param _dragonType Type of dragon
+    function _dragonPrice(DragonType _dragonType) public pure returns (uint256) {
             if (_dragonType == DragonType.Wyvern)
                 return 200;
             if (_dragonType == DragonType.Feydragon)
@@ -35,11 +39,18 @@ contract DragonManager is GemsERC20 {
 
     }
 
-    // Breed a free dragon
+    /// @dev Breed a free dragon
+    /// @param _name Name of a dragon
+    /// @param _defence Defence type of dragon. Required in Dragon fights
     function CreateGreenWelschDragon(string memory _name, defenceType _defence) external _readyToCreate() {
         _createDragon(_name, DragonType.GreenWelch, _defence);
     }
 
+    /// @dev Breed a payable dragon
+    /// @param _name Name of a dragon
+    /// @param _dragonToPay ID of a dragon who is going to pay for a new dragon
+    /// @param _dragonType Type of dragon
+    /// @param _defence Defence type of dragon. Required in Dragon fights
     function CreatePaidDragon(string memory _name, uint256 _dragonToPay, DragonType _dragonType,
      defenceType _defence) external _ownerOfDragon(_dragonToPay) _readyToCreate() {
                   uint256 price = _dragonPrice(_dragonType);
@@ -48,17 +59,19 @@ contract DragonManager is GemsERC20 {
                   _createDragon(_name, _dragonType, _defence);
               }
 
-    // Upgrade you dragon's stage once in three days
-    // Each stage expands dragon's gem maximum for 200 gems
-    function GetNextStage(uint256 _id) external _ownerOfDragon(_id) _readyToGrow(_id) {
+    /// @dev Upgrades you dragon's stage for successful fights
+    /// @dev Each stage expands dragon's gem maximum for 200 gems
+    /// @param _id ID of a dragon to get new stage
+    function GetNextStage(uint256 _id) external _ownerOfDragon(_id) {
         Dragon storage dragon = dragons[_id];
         require(dragon.stage < 5, "Dragon has reached the maximum stage");
+        require(dragon.wins > dragon.stage*2, "Not enough wins");
         dragon.stage++;
         dragon.gemsMax = dragon.gemsMax.add(200);
-        dragon.nextStageCooldown = now + 3 days;
     }
 
-    // Spend gems to expand gems maximum
+    /// @dev Spends gems to expand gems maximum
+    /// @param _id ID of dragon which gemsMax to expand
     function expandGemsMax(uint256 _id) external _ownerOfDragon(_id) {
         require(_balances[_id] >= 200, "Not enough gems");
          Dragon storage dragon = dragons[_id];
@@ -66,6 +79,9 @@ contract DragonManager is GemsERC20 {
          dragon.gemsMax = dragon.gemsMax.add(100);
     }
 
+    /// @dev Renames dragon, requires gems
+    /// @param _id ID of a dragon to be renamed
+    /// @param _newName New name to be set
     function renameDragon(uint256 _id, string memory _newName) external _ownerOfDragon(_id) {
         require(_balances[_id] >= 500, "Not enough gems");
         Dragon storage dragon = dragons[_id];
